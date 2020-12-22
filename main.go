@@ -141,7 +141,7 @@ func main() {
 			}
 			nal := signal.NewNal(sample.Data)
 			nal.ParseHeader()
-			fmt.Printf("NAL Unit Type: %s", nal.UnitType.String())
+			fmt.Printf("NAL Unit Type: %s\n", nal.UnitType.String())
 		
 		}
 				
