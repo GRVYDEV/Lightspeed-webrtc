@@ -5,13 +5,15 @@ package main
 import (
 	"fmt"
 	"net"
+	"os"
+	"strconv"
 	
-	// "github.com/pion/webrtc/v3/pkg/media/h264reader"
+	
 	"github.com/GRVYDEV/lightspeed-webrtc/internal"
 	"github.com/pion/rtp"
 	"github.com/pion/webrtc/v3"
 	"github.com/pion/webrtc/v3/pkg/media/samplebuilder"
-	"github.com/pion/rtp/codecs"
+	// "github.com/pion/rtp/codecs"
 )
 
 var (
@@ -29,8 +31,19 @@ func main() {
 		panic(err)
 	}
 
+	
+	
+	host, ok := os.LookupEnv("HOST_ADDR")
+	if !ok {
+		panic("Must set HOST_ADDR environment variable to the local IP of this machine")
+	}
+	port, err := strconv.Atoi(os.Getenv("INGEST_PORT"))
+
+	if err != nil{
+		port = 65535
+	}
 	// Open a UDP Listener for RTP Packets on port 5004
-	listener, err := net.ListenUDP("udp", &net.UDPAddr{IP: net.ParseIP("127.0.0.1"), Port: 5004})
+	listener, err := net.ListenUDP("udp", &net.UDPAddr{IP: net.ParseIP(host), Port: port})
 	if err != nil {
 		panic(err)
 	}
@@ -85,6 +98,7 @@ func main() {
 
 	// Wait for the offer to be pasted
 	offer := webrtc.SessionDescription{}
+	
 	signal.Decode(signal.MustReadStdin(), &offer)
 
 	// Set the remote SessionDescription
@@ -114,7 +128,7 @@ func main() {
 	// Output the answer in base64 so we can paste it in browser
 	fmt.Println(signal.Encode(*peerConnection.LocalDescription()))
 
-	videoBuilder = samplebuilder.New(10, &codecs.H264Packet{}, 90000)
+	// videoBuilder = samplebuilder.New(10, &codecs.H264Packet{}, 90000)
 
 
 	// Read RTP packets forever and send them to the WebRTC Client
@@ -133,17 +147,17 @@ func main() {
 			panic(err)
 		}
 
-		videoBuilder.Push(packet)
-		for {
-			sample := videoBuilder.Pop()
-			if sample == nil {
-				break
-			}
-			nal := signal.NewNal(sample.Data)
-			nal.ParseHeader()
-			fmt.Printf("NAL Unit Type: %s\n", nal.UnitType.String())
+		// videoBuilder.Push(packet)
+		// for {
+		// 	sample := videoBuilder.Pop()
+		// 	if sample == nil {
+		// 		break
+		// 	}
+		// 	nal := signal.NewNal(sample.Data)
+		// 	nal.ParseHeader()
+		// 	fmt.Printf("NAL Unit Type: %s\n", nal.UnitType.String())
 		
-		}
+		// }
 				
 		if _, writeErr := videoTrack.Write(inboundRTPPacket[:n]); writeErr != nil {
 			panic(writeErr)
