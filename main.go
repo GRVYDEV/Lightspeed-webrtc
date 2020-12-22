@@ -10,7 +10,6 @@ import (
 	"github.com/GRVYDEV/lightspeed-webrtc/internal"
 	"github.com/pion/rtp"
 	"github.com/pion/webrtc/v3"
-	// "github.com/pion/webrtc/v3/examples/internal/signal"
 	"github.com/pion/webrtc/v3/pkg/media/samplebuilder"
 	"github.com/pion/rtp/codecs"
 )
@@ -140,9 +139,9 @@ func main() {
 			if sample == nil {
 				break
 			}
-			// nal = newNal(sample.Data)
-			// nal.parseHeader()
-			// fmt.Printf("NAL Unit Type: %s", nal.UnitType)
+			nal := signal.NewNal(sample.Data)
+			nal.ParseHeader()
+			fmt.Printf("NAL Unit Type: %s", nal.UnitType.String())
 		
 		}
 				
