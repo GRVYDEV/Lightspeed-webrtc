@@ -5,6 +5,8 @@ package main
 import (
 	"fmt"
 	"net"
+	"os"
+	"strconv"
 	
 	// "github.com/pion/webrtc/v3/pkg/media/h264reader"
 	"github.com/GRVYDEV/lightspeed-webrtc/internal"
@@ -29,8 +31,19 @@ func main() {
 		panic(err)
 	}
 
+	
+	
+	host, ok := os.LookupEnv("HOST_ADDR")
+	if !ok {
+		panic("Must set HOST_ADDR environment variable to the local IP of this machine")
+	}
+	port, err := strconv.Atoi(os.Getenv("INGEST_PORT"))
+
+	if err != nil{
+		port = 65535
+	}
 	// Open a UDP Listener for RTP Packets on port 5004
-	listener, err := net.ListenUDP("udp", &net.UDPAddr{IP: net.ParseIP("10.17.0.5"), Port: 65535})
+	listener, err := net.ListenUDP("udp", &net.UDPAddr{IP: net.ParseIP(host), Port: port})
 	if err != nil {
 		panic(err)
 	}
