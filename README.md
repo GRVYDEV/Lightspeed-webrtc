@@ -1,7 +1,7 @@
 
 <p align="center">
 <a  href="https://github.com/GRVYDEV/Lightspeed-webrtc">
-    <img src="images/lightspeedlogo.png" alt="Logo" width="80" height="80">
+    <img src="images/lightspeedlogo.svg" alt="Logo" width="80" height="80">
 </a>
 </p>
   <h1 align="center">Project Lightspeed WebRTC</h1>
