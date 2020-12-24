@@ -134,7 +134,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 <!-- CONTACT -->
 ## Contact
 
-Your Name - [@twitter_handle](https://twitter.com/twitter_handle) - email
+Garrett Graves - [@grvydev](https://twitter.com/grvydev)
 
 Project Link: [https://github.com/GRVYDEV/Lightspeed-webrtc](https://github.com/GRVYDEV/Lightspeed-webrtc)
 
