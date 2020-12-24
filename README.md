@@ -87,7 +87,7 @@ In order to run this Golang is required. Installation instructions can be found 
 Get the repo
    ```sh
    export GO111MODULE=on
-   git get github.com/GRVYDEV/lightspeed-webrtc
+   go get github.com/GRVYDEV/lightspeed-webrtc
    ```
 
 
