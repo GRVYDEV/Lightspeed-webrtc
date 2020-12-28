@@ -19,7 +19,7 @@ var (
 )
 
 func main() {
-	fmt.Println("New Ver")
+
 	peerConnection, err := webrtc.NewPeerConnection(webrtc.Configuration{
 		ICEServers: []webrtc.ICEServer{
 			{
@@ -75,7 +75,7 @@ func main() {
 
 	transceiver, err := peerConnection.AddTransceiverFromTrack(videoTrack,
 		webrtc.RtpTransceiverInit{
-			Direction: webrtc.RTPTransceiverDirectionSendonly,
+			Direction: webrtc.RTPTransceiverDirectionRecvonly,
 		},
 	)
 	// rtpSender, err := peerConnection.AddTrack(videoTrack)
