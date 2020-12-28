@@ -19,6 +19,7 @@ var (
 )
 
 func main() {
+	fmt.Println("New Ver")
 	peerConnection, err := webrtc.NewPeerConnection(webrtc.Configuration{
 		ICEServers: []webrtc.ICEServer{
 			{
