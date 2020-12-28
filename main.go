@@ -75,13 +75,13 @@ func main() {
 
 	transceiver, err := peerConnection.AddTransceiverFromTrack(videoTrack,
 		webrtc.RtpTransceiverInit{
-			Direction: webrtc.RTPTransceiverDirectionRecvonly,
+			Direction: webrtc.RTPTransceiverDirectionSendonly,
 		},
 	)
 	// rtpSender, err := peerConnection.AddTrack(videoTrack)
-	// if err != nil {
-	// 	panic(err)
-	// }
+	if err != nil {
+		panic(err)
+	}
 
 	// Read incoming RTCP packets
 	// Before these packets are retuned they are processed by interceptors. For things
@@ -89,7 +89,7 @@ func main() {
 	go func() {
 		rtcpBuf := make([]byte, 1500)
 		for {
-			if _, _, rtcpErr := transceiver.Receiver().Read(rtcpBuf); rtcpErr != nil {
+			if _, _, rtcpErr := transceiver.Sender().Read(rtcpBuf); rtcpErr != nil {
 				return
 			}
 		}
