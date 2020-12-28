@@ -7,11 +7,11 @@ import (
 	"net"
 	"os"
 	"strconv"
-	"github.com/GRVYDEV/lightspeed-webrtc/internal"
+
+	"github.com/GRVYDEV/lightspeed-webrtc/internal/signal"
 	"github.com/pion/rtp"
 	"github.com/pion/webrtc/v3"
 	"github.com/pion/webrtc/v3/pkg/media/samplebuilder"
-	// "github.com/pion/rtp/codecs"
 )
 
 var (
