@@ -89,7 +89,7 @@ func main() {
 	go func() {
 		rtcpBuf := make([]byte, 1500)
 		for {
-			if _, _, rtcpErr := transceiver.Sender().Read(rtcpBuf); rtcpErr != nil {
+			if _, _, rtcpErr := transceiver.Receiver().Read(rtcpBuf); rtcpErr != nil {
 				return
 			}
 		}
