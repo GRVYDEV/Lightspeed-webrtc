@@ -7,8 +7,6 @@ import (
 	"net"
 	"os"
 	"strconv"
-	
-	
 	"github.com/GRVYDEV/lightspeed-webrtc/internal"
 	"github.com/pion/rtp"
 	"github.com/pion/webrtc/v3"
@@ -17,8 +15,9 @@ import (
 )
 
 var (
-	videoBuilder	*samplebuilder.SampleBuilder
+	videoBuilder *samplebuilder.SampleBuilder
 )
+
 func main() {
 	peerConnection, err := webrtc.NewPeerConnection(webrtc.Configuration{
 		ICEServers: []webrtc.ICEServer{
@@ -27,19 +26,18 @@ func main() {
 			},
 		},
 	})
+
 	if err != nil {
 		panic(err)
 	}
 
-	
-	
 	host, ok := os.LookupEnv("HOST_ADDR")
 	if !ok {
 		panic("Must set HOST_ADDR environment variable to the local IP of this machine")
 	}
 	port, err := strconv.Atoi(os.Getenv("INGEST_PORT"))
 
-	if err != nil{
+	if err != nil {
 		port = 65535
 	}
 	// Open a UDP Listener for RTP Packets on port 5004
@@ -73,10 +71,16 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	rtpSender, err := peerConnection.AddTrack(videoTrack)
-	if err != nil {
-		panic(err)
-	}
+
+	transceiver, err := peerConnection.AddTransceiverFromTrack(videoTrack,
+		webrtc.RtpTransceiverInit{
+			Direction: webrtc.RTPTransceiverDirectionSendonly,
+		},
+	)
+	// rtpSender, err := peerConnection.AddTrack(videoTrack)
+	// if err != nil {
+	// 	panic(err)
+	// }
 
 	// Read incoming RTCP packets
 	// Before these packets are retuned they are processed by interceptors. For things
@@ -84,7 +88,7 @@ func main() {
 	go func() {
 		rtcpBuf := make([]byte, 1500)
 		for {
-			if _, _, rtcpErr := rtpSender.Read(rtcpBuf); rtcpErr != nil {
+			if _, _, rtcpErr := transceiver.Sender().Read(rtcpBuf); rtcpErr != nil {
 				return
 			}
 		}
@@ -98,7 +102,7 @@ func main() {
 
 	// Wait for the offer to be pasted
 	offer := webrtc.SessionDescription{}
-	
+
 	signal.Decode(signal.MustReadStdin(), &offer)
 
 	// Set the remote SessionDescription
@@ -130,13 +134,11 @@ func main() {
 
 	// videoBuilder = samplebuilder.New(10, &codecs.H264Packet{}, 90000)
 
-
 	// Read RTP packets forever and send them to the WebRTC Client
 	for {
-	   	
+
 		n, _, err := listener.ReadFrom(inboundRTPPacket)
 
-		
 		if err != nil {
 			fmt.Printf("error during read: %s", err)
 			panic(err)
@@ -156,14 +158,12 @@ func main() {
 		// 	nal := signal.NewNal(sample.Data)
 		// 	nal.ParseHeader()
 		// 	fmt.Printf("NAL Unit Type: %s\n", nal.UnitType.String())
-		
+
 		// }
-				
+
 		if _, writeErr := videoTrack.Write(inboundRTPPacket[:n]); writeErr != nil {
 			panic(writeErr)
 		}
 	}
-
-
 
 }
