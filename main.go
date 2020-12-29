@@ -8,8 +8,6 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"os"
-	"strconv"
 	"sync"
 	"time"
 
@@ -50,15 +48,12 @@ type peerConnectionState struct {
 
 func main() {
 	flag.Parse()
-	fmt.Printf("Addr: %#v", *addr)
+	fmt.Printf("WS Hosted on: %#v\n", *addr)
 	log.SetFlags(0)
 	trackLocals = map[string]*webrtc.TrackLocalStaticRTP{}
 
-	port, err := strconv.Atoi(os.Getenv("INGEST_PORT"))
+	port := 65535
 
-	if err != nil {
-		port = 65535
-	}
 	// Open a UDP Listener for RTP Packets on port 5004
 	listener, err := net.ListenUDP("udp", &net.UDPAddr{IP: net.ParseIP(*iAddr), Port: port})
 	if err != nil {
@@ -78,7 +73,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("Read packet")
 
 	// Unmarshal the incoming packet
 	packet := &rtp.Packet{}
@@ -91,11 +85,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("Track created")
 
 	// start HTTP server
 	go func() {
-		fmt.Printf("Server started?")
 		http.HandleFunc("/websocket", websocketHandler)
 
 		log.Fatal(http.ListenAndServe(*addr, nil))
@@ -115,8 +107,6 @@ func main() {
 		if err = packet.Unmarshal(inboundRTPPacket[:n]); err != nil {
 			panic(err)
 		}
-
-		
 
 		if _, writeErr := videoTrack.Write(inboundRTPPacket[:n]); writeErr != nil {
 			panic(writeErr)
