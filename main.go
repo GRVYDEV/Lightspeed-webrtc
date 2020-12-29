@@ -25,7 +25,7 @@ import (
 var (
 	videoBuilder *samplebuilder.SampleBuilder
 	addr         = flag.String("addr", "localhost:8080", "http service address")
-	iAddr         = flag.String("i-addr", "127.0.0.1", "Address that ingest server should listen on")
+	iAddr        = flag.String("i-addr", "127.0.0.1", "Address that ingest server should listen on")
 	upgrader     = websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool { return true },
 	}
@@ -54,19 +54,6 @@ func main() {
 	log.SetFlags(0)
 	trackLocals = map[string]*webrtc.TrackLocalStaticRTP{}
 
-	// peerConnection, err := webrtc.NewPeerConnection(webrtc.Configuration{
-	// 	ICEServers: []webrtc.ICEServer{
-	// 		{
-	// 			URLs: []string{"stun:stun.l.google.com:19302"},
-	// 		},
-	// 	},
-	// })
-
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	
 	port, err := strconv.Atoi(os.Getenv("INGEST_PORT"))
 
 	if err != nil {
@@ -114,60 +101,6 @@ func main() {
 		log.Fatal(http.ListenAndServe(*addr, nil))
 	}()
 
-	// transceiver, err := peerConnection.AddTransceiverFromTrack(videoTrack,
-	// 	webrtc.RtpTransceiverInit{
-	// 		Direction: webrtc.RTPTransceiverDirectionSendonly,
-	// 	},
-	// )
-	// // rtpSender, err := peerConnection.AddTrack(videoTrack)
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// Read incoming RTCP packets
-	// Before these packets are retuned they are processed by interceptors. For things
-	// like NACK this needs to be called.
-
-	// Set the handler for ICE connection state
-	// This will notify you when the peer has connected/disconnected
-	// peerConnection.OnICEConnectionStateChange(func(connectionState webrtc.ICEConnectionState) {
-	// 	fmt.Printf("Connection State has changed %s \n", connectionState.String())
-	// })
-
-	// // Wait for the offer to be pasted
-	// offer := webrtc.SessionDescription{}
-
-	// signal.Decode(signal.MustReadStdin(), &offer)
-
-	// // Set the remote SessionDescription
-	// if err = peerConnection.SetRemoteDescription(offer); err != nil {
-	// 	panic(err)
-	// }
-
-	// // Create answer
-	// answer, err := peerConnection.CreateAnswer(nil)
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// // Create channel that is blocked until ICE Gathering is complete
-	// gatherComplete := webrtc.GatheringCompletePromise(peerConnection)
-
-	// // Sets the LocalDescription, and starts our UDP listeners
-	// if err = peerConnection.SetLocalDescription(answer); err != nil {
-	// 	panic(err)
-	// }
-
-	// // Block until ICE Gathering is complete, disabling trickle ICE
-	// // we do this because we only can exchange one signaling message
-	// // in a production application you should exchange ICE Candidates via OnICECandidate
-	// <-gatherComplete
-
-	// // Output the answer in base64 so we can paste it in browser
-	// fmt.Println(signal.Encode(*peerConnection.LocalDescription()))
-
-	// videoBuilder = samplebuilder.New(10, &codecs.H264Packet{}, 90000)
-
 	// Read RTP packets forever and send them to the WebRTC Client
 	for {
 
@@ -183,17 +116,7 @@ func main() {
 			panic(err)
 		}
 
-		// videoBuilder.Push(packet)
-		// for {
-		// 	sample := videoBuilder.Pop()
-		// 	if sample == nil {
-		// 		break
-		// 	}
-		// 	nal := signal.NewNal(sample.Data)
-		// 	nal.ParseHeader()
-		// 	fmt.Printf("NAL Unit Type: %s\n", nal.UnitType.String())
-
-		// }
+		
 
 		if _, writeErr := videoTrack.Write(inboundRTPPacket[:n]); writeErr != nil {
 			panic(writeErr)
@@ -237,7 +160,6 @@ func cleanConnections() {
 // Handle incoming websockets
 func websocketHandler(w http.ResponseWriter, r *http.Request) {
 
-	
 	// Upgrade HTTP request to Websocket
 	unsafeConn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -278,14 +200,6 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}()
-	// for _, typ := range []webrtc.RTPCodecType{webrtc.RTPCodecTypeVideo, webrtc.RTPCodecTypeAudio} {
-	// 	if _, err := peerConnection.AddTransceiverFromKind(typ, webrtc.RTPTransceiverInit{
-	// 		Direction: webrtc.RTPTransceiverDirectionSendonly,
-	// 	}); err != nil {
-	// 		log.Print(err)
-	// 		return
-	// 	}
-	// }
 
 	// Add our new PeerConnection to global list
 	listLock.Lock()
@@ -322,7 +236,7 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		case webrtc.PeerConnectionStateClosed:
 			cleanConnections()
-			
+
 		}
 	})
 
@@ -360,7 +274,7 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 
 		switch message.Event {
 		case "candidate":
-		
+
 			candidate := webrtc.ICECandidateInit{}
 			if err := json.Unmarshal([]byte(message.Data), &candidate); err != nil {
 				log.Println(err)
@@ -372,7 +286,7 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		case "answer":
-		
+
 			answer := webrtc.SessionDescription{}
 			if err := json.Unmarshal([]byte(message.Data), &answer); err != nil {
 				log.Println(err)
