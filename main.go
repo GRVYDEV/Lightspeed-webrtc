@@ -13,10 +13,12 @@ import (
 
 	"flag"
 
+	"github.com/GRVYDEV/lightspeed-webrtc/internal/signal"
 	"github.com/gorilla/websocket"
-
 	"github.com/pion/rtp"
+	"github.com/pion/rtp/codecs"
 	"github.com/pion/webrtc/v3"
+	"github.com/pion/webrtc/v3/pkg/media"
 	"github.com/pion/webrtc/v3/pkg/media/samplebuilder"
 )
 
@@ -28,7 +30,7 @@ var (
 		CheckOrigin: func(r *http.Request) bool { return true },
 	}
 
-	videoTrack *webrtc.TrackLocalStaticRTP
+	videoTrack *webrtc.TrackLocalStaticSample
 
 	// lock for peerConnections and trackLocals
 	listLock        sync.RWMutex
@@ -81,7 +83,7 @@ func main() {
 	}
 
 	// Create a video track
-	videoTrack, err = webrtc.NewTrackLocalStaticRTP(webrtc.RTPCodecCapability{MimeType: "video/h264"}, "video", "pion")
+	videoTrack, err = webrtc.NewTrackLocalStaticSample(webrtc.RTPCodecCapability{MimeType: "video/h264"}, "video", "pion")
 	if err != nil {
 		panic(err)
 	}
@@ -93,7 +95,10 @@ func main() {
 		log.Fatal(http.ListenAndServe(*addr, nil))
 	}()
 
+	videoBuilder = samplebuilder.New(10, &codecs.H264Packet{}, 90000)
+
 	// Read RTP packets forever and send them to the WebRTC Client
+	spsAndPpsCache := []byte{}
 	for {
 
 		n, _, err := listener.ReadFrom(inboundRTPPacket)
@@ -107,8 +112,32 @@ func main() {
 		if err = packet.Unmarshal(inboundRTPPacket[:n]); err != nil {
 			panic(err)
 		}
+		videoBuilder.Push(packet)
 
-		if _, writeErr := videoTrack.Write(inboundRTPPacket[:n]); writeErr != nil {
+		sample := videoBuilder.Pop()
+		if sample == nil {
+			break
+		}
+		nal := signal.NewNal(sample.Data)
+		nal.ParseHeader()
+		fmt.Printf("NAL Unit Type: %s\n", nal.UnitType.String())
+
+		nal.Data = append([]byte{0x00, 0x00, 0x00, 0x01}, nal.Data...)
+
+		if nal.UnitType == signal.NalUnitTypeSPS || nal.UnitType == signal.NalUnitTypePPS {
+			spsAndPpsCache = append(spsAndPpsCache, nal.Data...)
+			continue
+		} else if nal.UnitType == signal.NalUnitTypeCodedSliceIdr {
+			nal.Data = append(spsAndPpsCache, nal.Data...)
+			spsAndPpsCache = []byte{}
+		}
+
+		// packet := &rtp.Packet{}
+		// if err = packet.Unmarshal(inboundRTPPacket[:n]); err != nil {
+		// 	panic(err)
+		// }
+
+		if writeErr := videoTrack.WriteSample(media.Sample{Data: nal.Data}); writeErr != nil {
 			panic(writeErr)
 		}
 	}
