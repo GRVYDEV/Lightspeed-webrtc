@@ -126,7 +126,7 @@ func main() {
 
 		if nal.UnitType == signal.NalUnitTypeSPS || nal.UnitType == signal.NalUnitTypePPS {
 			spsAndPpsCache = append(spsAndPpsCache, nal.Data...)
-			continue
+			
 		
 		} else if nal.UnitType == signal.NalUnitTypeCodedSliceIdr {
 			nal.Data = append(spsAndPpsCache, nal.Data...)
