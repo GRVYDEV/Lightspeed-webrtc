@@ -108,9 +108,13 @@ func main() {
 			panic(err)
 		}
 
-		if _, writeErr := videoTrack.Write(inboundRTPPacket[:n]); writeErr != nil {
-			panic(writeErr)
+		if packet.Header.PayloadType == 96{
+			if _, writeErr := videoTrack.Write(inboundRTPPacket[:n]); writeErr != nil {
+				panic(writeErr)
+			}
 		}
+
+		
 	}
 
 }
