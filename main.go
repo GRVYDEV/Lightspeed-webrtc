@@ -30,6 +30,8 @@ var (
 
 	videoTrack *webrtc.TrackLocalStaticRTP
 
+	audioTrack *webrtc.TrackLocalStaticRTP
+
 	// lock for peerConnections and trackLocals
 	listLock        sync.RWMutex
 	peerConnections []peerConnectionState
@@ -86,6 +88,11 @@ func main() {
 		panic(err)
 	}
 
+	audioTrack, err = webrtc.NewTrackLocalStaticRTP(webrtc.RTPCodecCapability{MimeType: "audio/opus"}, "video", "pion")
+	if err != nil {
+		panic(err)
+	}
+
 	// start HTTP server
 	go func() {
 		http.HandleFunc("/websocket", websocketHandler)
@@ -108,13 +115,16 @@ func main() {
 			panic(err)
 		}
 
-		if packet.Header.PayloadType == 96{
+		if packet.Header.PayloadType == 96 {
 			if _, writeErr := videoTrack.Write(inboundRTPPacket[:n]); writeErr != nil {
+				panic(writeErr)
+			}
+		} else if packet.Header.PayloadType == 97 {
+			if _, writeErr := audioTrack.Write(inboundRTPPacket[:n]); writeErr != nil {
 				panic(writeErr)
 			}
 		}
 
-		
 	}
 
 }
@@ -177,7 +187,12 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 	defer peerConnection.Close() //nolint
 
 	// Accept one audio and one video track Outgoing
-	transceiver, err := peerConnection.AddTransceiverFromTrack(videoTrack,
+	transceiverVideo, err := peerConnection.AddTransceiverFromTrack(videoTrack,
+		webrtc.RtpTransceiverInit{
+			Direction: webrtc.RTPTransceiverDirectionSendonly,
+		},
+	)
+	transceiverAudio, err := peerConnection.AddTransceiverFromTrack(audioTrack,
 		webrtc.RtpTransceiverInit{
 			Direction: webrtc.RTPTransceiverDirectionSendonly,
 		},
@@ -189,7 +204,10 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 	go func() {
 		rtcpBuf := make([]byte, 1500)
 		for {
-			if _, _, rtcpErr := transceiver.Sender().Read(rtcpBuf); rtcpErr != nil {
+			if _, _, rtcpErr := transceiverVideo.Sender().Read(rtcpBuf); rtcpErr != nil {
+				return
+			}
+			if _, _, rtcpErr := transceiverAudio.Sender().Read(rtcpBuf); rtcpErr != nil {
 				return
 			}
 		}
