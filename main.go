@@ -126,18 +126,21 @@ func main() {
 
 		if nal.UnitType == signal.NalUnitTypeSPS || nal.UnitType == signal.NalUnitTypePPS {
 			spsAndPpsCache = append(spsAndPpsCache, nal.Data...)
+			continue
 		
 		} else if nal.UnitType == signal.NalUnitTypeCodedSliceIdr {
 			nal.Data = append(spsAndPpsCache, nal.Data...)
 			spsAndPpsCache = []byte{}
 		}
 
+		sample.Data = nal.Data
+
 		// packet := &rtp.Packet{}
 		// if err = packet.Unmarshal(inboundRTPPacket[:n]); err != nil {
 		// 	panic(err)
 		// }
 
-		if writeErr := videoTrack.WriteSample(media.Sample{Data: nal.Data}); writeErr != nil {
+		if writeErr := videoTrack.WriteSample(*sample); writeErr != nil {
 			panic(writeErr)
 		}
 	}
