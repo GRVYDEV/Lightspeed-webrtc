@@ -116,7 +116,7 @@ func main() {
 
 		sample := videoBuilder.Pop()
 		if sample == nil {
-			break
+			continue
 		}
 		nal := signal.NewNal(sample.Data)
 		nal.ParseHeader()
