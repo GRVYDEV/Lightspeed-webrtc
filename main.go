@@ -18,7 +18,6 @@ import (
 	"github.com/pion/rtp"
 	"github.com/pion/rtp/codecs"
 	"github.com/pion/webrtc/v3"
-	"github.com/pion/webrtc/v3/pkg/media"
 	"github.com/pion/webrtc/v3/pkg/media/samplebuilder"
 )
 
@@ -122,12 +121,13 @@ func main() {
 		nal.ParseHeader()
 		fmt.Printf("NAL Unit Type: %s\n", nal.UnitType.String())
 
+		time.Sleep(time.Millisecond * 33)
+
 		nal.Data = append([]byte{0x00, 0x00, 0x00, 0x01}, nal.Data...)
 
 		if nal.UnitType == signal.NalUnitTypeSPS || nal.UnitType == signal.NalUnitTypePPS {
 			spsAndPpsCache = append(spsAndPpsCache, nal.Data...)
-			
-		
+
 		} else if nal.UnitType == signal.NalUnitTypeCodedSliceIdr {
 			nal.Data = append(spsAndPpsCache, nal.Data...)
 			spsAndPpsCache = []byte{}
