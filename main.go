@@ -22,7 +22,7 @@ import (
 
 var (
 	videoBuilder *samplebuilder.SampleBuilder
-	addr         = flag.String("addr", "localhost:8080", "http service address")
+	addr         = flag.String("addr", "localhost", "http service address")
 	upgrader     = websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool { return true },
 	}
