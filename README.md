@@ -1,4 +1,3 @@
-
 <p align="center">
 <a  href="https://github.com/GRVYDEV/Lightspeed-webrtc">
     <img src="images/lightspeedlogo.svg" alt="Logo" width="150" height="150">
@@ -29,8 +28,6 @@
   </p>
 </p>
 
-
-
 <!-- TABLE OF CONTENTS -->
 <details open="open">
   <summary><h2 style="display: inline-block">Table of Contents</h2></summary>
@@ -57,23 +54,21 @@
   </ol>
 </details>
 
-
-
 <!-- ABOUT THE PROJECT -->
+
 ## About The Project
 
 <!-- [![Product Name Screen Shot][product-screenshot]](https://example.com) -->
 
 This is one of three components required for Project Lightspeed. Project Lightspeed is a fully self contained live streaming server. With this you will be able to deploy your own sub-second latency live streaming platform. This particular repository takes RTP packets sent to the server and broadcasts them over WebRTC. In order for this to work the Project Lightspeed Ingest server is required to perfrom the FTL handshake with OBS. In order to view the live stream the Project Lightspeed viewer is required.
 
-
 ### Built With
 
-* Pion
-* Golang
-
+- Pion
+- Golang
 
 <!-- GETTING STARTED -->
+
 ## Getting Started
 
 To get a local copy up and running follow these simple steps.
@@ -84,34 +79,56 @@ In order to run this Golang is required. Installation instructions can be found 
 
 ### Installation
 
-Get the repo
-   ```sh
-   export GO111MODULE=on
-   go get github.com/GRVYDEV/lightspeed-webrtc
-   ```
+Using go get
 
+```sh
+export GO111MODULE=on
+go get github.com/GRVYDEV/lightspeed-webrtc
+```
+
+Using git
+
+```sh
+git clone https://github.com/GRVYDEV/Lightspeed-webrtc.git
+cd Lightspeed-webrtc
+go build
+```
 
 <!-- USAGE EXAMPLES -->
+
 ## Usage
 
-To run type the following command. The host ip argument is the local IP address of your machine. This is the IP that the server uses to listen for RTP Packets on
+To run type the following command. 
+
+Using go get
 ```sh
-   lightspeed-webrtc --host-ip=XX.XX.XX.XX
-   ```
+lightspeed-webrtc --addr=XXX.XXX.XXX.XXX
+```
+
+Using git
+```sh
+cd Lightspeed-webrtc
+go build
+./lightspeed-webrtc --addr=XXX.XXX.XXX.XXX
+```
+
+#### Arguments
+| Argument  | Supported Values | Notes             |
+| :-------- | :--------------- | :---------------- |
+| `--addr`   | A valid IP address | This is the local Ip address of your machine. It defaults to localhost but should be set to your local IP. For example 10.17.0.5 This is where the server will listen for UDP packets and where it will host the websocket endpoint for SDP negotiation|
+
 
 
 <!-- _For more examples, please refer to the [Documentation](https://example.com)_ -->
 
-
-
 <!-- ROADMAP -->
+
 ## Roadmap
 
 See the [open issues](https://github.com/GRVYDEV/Lightspeed-webrtc/issues) for a list of proposed features (and known issues).
 
-
-
 <!-- CONTRIBUTING -->
+
 ## Contributing
 
 Contributions are what make the open source community such an amazing place to be learn, inspire, and create. Any contributions you make are **greatly appreciated**.
@@ -122,37 +139,31 @@ Contributions are what make the open source community such an amazing place to b
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-
-
 <!-- LICENSE -->
+
 ## License
 
 Distributed under the MIT License. See `LICENSE` for more information.
 
-
-
 <!-- CONTACT -->
+
 ## Contact
 
 Garrett Graves - [@grvydev](https://twitter.com/grvydev)
 
 Project Link: [https://github.com/GRVYDEV/Lightspeed-webrtc](https://github.com/GRVYDEV/Lightspeed-webrtc)
 
-
-
 <!-- ACKNOWLEDGEMENTS -->
+
 ## Acknowledgements
 
-* []()
-* []()
-* []()
-
-
-
-
+- []()
+- []()
+- []()
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
+
 [contributors-shield]: https://img.shields.io/github/contributors/GRVYDEV/repo.svg?style=for-the-badge
 [contributors-url]: https://github.com/GRVYDEV/repo/graphs/contributors
 [forks-shield]: https://img.shields.io/github/forks/GRVYDEV/repo.svg?style=for-the-badge
@@ -165,4 +176,3 @@ Project Link: [https://github.com/GRVYDEV/Lightspeed-webrtc](https://github.com/
 [license-url]: https://github.com/GRVYDEV/repo/blob/master/LICENSE.txt
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://linkedin.com/in/GRVYDEV
-
