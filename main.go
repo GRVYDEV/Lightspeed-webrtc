@@ -100,7 +100,8 @@ func main() {
 
 		packet := &rtp.Packet{}
 		if err = packet.Unmarshal(inboundRTPPacket[:n]); err != nil {
-			panic(err)
+			fmt.Printf("Error unmarshaling RTP packet %s\n", err)
+			// panic(err)
 		}
 
 		if packet.Header.PayloadType == 96 {
