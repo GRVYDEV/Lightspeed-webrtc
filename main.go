@@ -100,7 +100,10 @@ func main() {
 
 		packet := &rtp.Packet{}
 		if err = packet.Unmarshal(inboundRTPPacket[:n]); err != nil {
-			panic(err)
+			//It has been found that the windows version of OBS sends us some malformed packets
+			//It does not effect the stream so we will disable any output here
+			//fmt.Printf("Error unmarshaling RTP packet %s\n", err)
+			
 		}
 
 		if packet.Header.PayloadType == 96 {
