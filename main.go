@@ -23,7 +23,6 @@ import (
 var (
 	videoBuilder *samplebuilder.SampleBuilder
 	addr         = flag.String("addr", "localhost:8080", "http service address")
-	iAddr        = flag.String("i-addr", "127.0.0.1", "Address that ingest server should listen on")
 	upgrader     = websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool { return true },
 	}
@@ -50,14 +49,13 @@ type peerConnectionState struct {
 
 func main() {
 	flag.Parse()
-	fmt.Printf("WS Hosted on: %#v\n", *addr)
 	log.SetFlags(0)
 	trackLocals = map[string]*webrtc.TrackLocalStaticRTP{}
 
 	port := 65535
 
-	// Open a UDP Listener for RTP Packets on port 5004
-	listener, err := net.ListenUDP("udp", &net.UDPAddr{IP: net.ParseIP(*iAddr), Port: port})
+	// Open a UDP Listener for RTP Packets on port 65535
+	listener, err := net.ListenUDP("udp", &net.UDPAddr{IP: net.ParseIP(*addr), Port: port})
 	if err != nil {
 		panic(err)
 	}
@@ -67,20 +65,7 @@ func main() {
 		}
 	}()
 
-	fmt.Println("Waiting for RTP Packets, please run GStreamer or ffmpeg now")
-
-	// Listen for a single RTP Packet, we need this to determine the SSRC
-	inboundRTPPacket := make([]byte, 4096) // UDP MTU
-	n, _, err := listener.ReadFromUDP(inboundRTPPacket)
-	if err != nil {
-		panic(err)
-	}
-
-	// Unmarshal the incoming packet
-	packet := &rtp.Packet{}
-	if err = packet.Unmarshal(inboundRTPPacket[:n]); err != nil {
-		panic(err)
-	}
+	fmt.Println("Waiting for RTP Packets")
 
 	// Create a video track
 	videoTrack, err = webrtc.NewTrackLocalStaticRTP(webrtc.RTPCodecCapability{MimeType: "video/h264"}, "video", "pion")
@@ -88,6 +73,7 @@ func main() {
 		panic(err)
 	}
 
+	// Create a video track
 	audioTrack, err = webrtc.NewTrackLocalStaticRTP(webrtc.RTPCodecCapability{MimeType: "audio/opus"}, "video", "pion")
 	if err != nil {
 		panic(err)
@@ -97,8 +83,10 @@ func main() {
 	go func() {
 		http.HandleFunc("/websocket", websocketHandler)
 
-		log.Fatal(http.ListenAndServe(*addr, nil))
+		log.Fatal(http.ListenAndServe(*addr+":8080", nil))
 	}()
+
+	inboundRTPPacket := make([]byte, 4096) // UDP MTU
 
 	// Read RTP packets forever and send them to the WebRTC Client
 	for {
