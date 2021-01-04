@@ -67,6 +67,11 @@ This is one of three components required for Project Lightspeed. Project Lightsp
 - Pion
 - Golang
 
+### Dependencies
+
+- [Lightspeed Ingest](https://github.com/GRVYDEV/Lightspeed-ingest)
+- [Lightspeed React](https://github.com/GRVYDEV/Lightspeed-react)
+
 <!-- GETTING STARTED -->
 
 ## Getting Started
@@ -157,9 +162,9 @@ Project Link: [https://github.com/GRVYDEV/Lightspeed-webrtc](https://github.com/
 
 ## Acknowledgements
 
-- []()
-- []()
-- []()
+- [Sean Dubois](https://github.com/Sean-Der)
+- [Hayden McAfee](https://github.com/haydenmc)
+
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
