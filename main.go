@@ -8,6 +8,8 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -15,6 +17,7 @@ import (
 
 	"github.com/gorilla/websocket"
 
+	"github.com/pion/interceptor"
 	"github.com/pion/rtp"
 	"github.com/pion/webrtc/v3"
 	"github.com/pion/webrtc/v3/pkg/media/samplebuilder"
@@ -23,6 +26,8 @@ import (
 var (
 	videoBuilder *samplebuilder.SampleBuilder
 	addr         = flag.String("addr", "localhost", "http service address")
+	ip           = flag.String("ip", "none", "IP address for webrtc")
+	ports        = flag.String("ports", "20000-20500", "Port range for webrtc")
 	upgrader     = websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool { return true },
 	}
@@ -103,7 +108,7 @@ func main() {
 			//It has been found that the windows version of OBS sends us some malformed packets
 			//It does not effect the stream so we will disable any output here
 			//fmt.Printf("Error unmarshaling RTP packet %s\n", err)
-			
+
 		}
 
 		if packet.Header.PayloadType == 96 {
@@ -118,6 +123,44 @@ func main() {
 
 	}
 
+}
+
+// Create a new webrtc.API object that takes public IP addresses and port ranges into account.
+func createWebrtcApi() *webrtc.API {
+	s := webrtc.SettingEngine{}
+
+	// Set a NAT IP if one is given
+	if *ip != "none" {
+		s.SetNAT1To1IPs([]string{*ip}, webrtc.ICECandidateTypeHost)
+	}
+
+	// Split given port range into two sides, pass them to SettingEngine
+	pr := strings.SplitN(*ports, "-", 2)
+
+	pr_low, err := strconv.ParseUint(pr[0], 10, 16)
+	if err != nil {
+		panic(err)
+	}
+	pr_high, err := strconv.ParseUint(pr[1], 10, 16)
+	if err != nil {
+		panic(err)
+	}
+
+	s.SetEphemeralUDPPortRange(uint16(pr_low), uint16(pr_high))
+
+	// Default parameters as specified in Pion's non-API NewPeerConnection call
+	// These are needed because CreateOffer will not function without them
+	m := &webrtc.MediaEngine{}
+	if err := m.RegisterDefaultCodecs(); err != nil {
+		panic(err)
+	}
+
+	i := &interceptor.Registry{}
+	if err := webrtc.RegisterDefaultInterceptors(m, i); err != nil {
+		panic(err)
+	}
+
+	return webrtc.NewAPI(webrtc.WithMediaEngine(m), webrtc.WithInterceptorRegistry(i), webrtc.WithSettingEngine(s))
 }
 
 func cleanConnections() {
@@ -167,8 +210,11 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 	// When this frame returns close the Websocket
 	defer c.Close() //nolint
 
+	// Create API that takes IP and port range into account
+	api := createWebrtcApi()
+
 	// Create new PeerConnection
-	peerConnection, err := webrtc.NewPeerConnection(webrtc.Configuration{})
+	peerConnection, err := api.NewPeerConnection(webrtc.Configuration{})
 	if err != nil {
 		log.Print(err)
 		return
