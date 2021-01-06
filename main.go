@@ -166,7 +166,7 @@ func cleanConnection(peerConnection *webrtc.PeerConnection) {
 	listLock.Lock()
 	defer listLock.Unlock()
 
-	for i := 0; i < len(peerConnections); {
+	for i := range peerConnections {
 		if peerConnection == peerConnections[i].peerConnection {
 			peerConnections[i] = peerConnections[len(peerConnections)-1]
 			peerConnections[len(peerConnections)-1] = peerConnectionState{}
