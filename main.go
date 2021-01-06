@@ -11,7 +11,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 
 	"flag"
 
@@ -163,36 +162,18 @@ func createWebrtcApi() *webrtc.API {
 	return webrtc.NewAPI(webrtc.WithMediaEngine(m), webrtc.WithInterceptorRegistry(i), webrtc.WithSettingEngine(s))
 }
 
-func cleanConnections() {
+func cleanConnection(peerConnection *webrtc.PeerConnection) {
 	listLock.Lock()
-	defer func() {
-		listLock.Unlock()
-	}()
-	attemptClean := func() (tryAgain bool) {
-		for i := range peerConnections {
-			if peerConnections[i].peerConnection.ConnectionState() == webrtc.PeerConnectionStateClosed {
-				peerConnections = append(peerConnections[:i], peerConnections[i+1:]...)
-				return true // We modified the slice, start from the beginning
-			}
-		}
-		return
-	}
+	defer listLock.Unlock()
 
-	for cleanAttempt := 0; ; cleanAttempt++ {
-		if cleanAttempt == 25 {
-			// Release the lock and attempt a sync in 3 seconds. We might be blocking a RemoveTrack or AddTrack
-			go func() {
-				time.Sleep(time.Second * 3)
-				cleanConnections()
-			}()
+	for i := range peerConnections {
+		if peerConnection == peerConnections[i].peerConnection {
+			peerConnections[i] = peerConnections[len(peerConnections)-1]
+			peerConnections[len(peerConnections)-1] = peerConnectionState{}
+			peerConnections = peerConnections[:len(peerConnections)-1]
 			return
 		}
-
-		if !attemptClean() {
-			break
-		}
 	}
-
 }
 
 // Handle incoming websockets
@@ -284,7 +265,7 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 				log.Print(err)
 			}
 		case webrtc.PeerConnectionStateClosed:
-			cleanConnections()
+			cleanConnection(peerConnection)
 
 		}
 	})
