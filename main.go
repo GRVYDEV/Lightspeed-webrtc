@@ -26,6 +26,8 @@ var (
 	videoBuilder *samplebuilder.SampleBuilder
 	addr         = flag.String("addr", "localhost", "http service address")
 	ip           = flag.String("ip", "none", "IP address for webrtc")
+	wsPort       = flag.Int("ws-port", 8080, "Port for websocket")
+	rtpPort      = flag.Int("rtp-port", 65535, "Port for RTP")
 	ports        = flag.String("ports", "20000-20500", "Port range for webrtc")
 	upgrader     = websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool { return true },
@@ -56,10 +58,8 @@ func main() {
 	log.SetFlags(0)
 	trackLocals = map[string]*webrtc.TrackLocalStaticRTP{}
 
-	port := 65535
-
 	// Open a UDP Listener for RTP Packets on port 65535
-	listener, err := net.ListenUDP("udp", &net.UDPAddr{IP: net.ParseIP(*addr), Port: port})
+	listener, err := net.ListenUDP("udp", &net.UDPAddr{IP: net.ParseIP(*addr), Port: *rtpPort})
 	if err != nil {
 		panic(err)
 	}
@@ -87,7 +87,7 @@ func main() {
 	go func() {
 		http.HandleFunc("/websocket", websocketHandler)
 
-		log.Fatal(http.ListenAndServe(*addr+":8080", nil))
+		log.Fatal(http.ListenAndServe(*addr+":"+strconv.Itoa(*wsPort), nil))
 	}()
 
 	inboundRTPPacket := make([]byte, 4096) // UDP MTU
