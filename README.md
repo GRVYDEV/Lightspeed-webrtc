@@ -118,8 +118,8 @@ go build
 ```
 
 #### Arguments
-|   Argument  | Supported Values | Defaults | Notes             |
-| :----------- | :--------------- | :------- | :---------------- |
+|  Argument | Supported Values | Defaults | Notes             |
+| :-------- | :--------------- | :------- | :---------------- |
 | `--addr`   | A valid IP address | `localhost` | This is the local Ip address of your machine. It defaults to localhost but should be set to your local IP. For example 10.17.0.5 This is where the server will listen for UDP packets and where it will host the websocket endpoint for SDP negotiation|
 |  `--ip`    | A valid IP address | `none` | Sets the public IP address for WebRTC to use. This is especially useful in the context of Docker|
 | `--ports`  | A valid UDP port range | `20000-20500` | This sets the UDP ports that WebRTC will use to connect with the client |
