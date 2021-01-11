@@ -4,10 +4,10 @@ WORKDIR /go/src/app
 COPY . .
 ENV GO111MODULE=on
 RUN go mod download
-RUN go build -o lightspeed-webrtc .
+RUN go build -ldflags "-linkmode external -extldflags -static" -o lightspeed-webrtc .
 
 
-FROM debian:buster-slim
+FROM scratch
 COPY --from=builder /go/src/app/lightspeed-webrtc /usr/local/bin/
 EXPOSE 8080
 
