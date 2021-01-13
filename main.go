@@ -77,7 +77,7 @@ func main() {
 		panic(err)
 	}
 
-	// Create a video track
+	// Create an audio track
 	audioTrack, err = webrtc.NewTrackLocalStaticRTP(webrtc.RTPCodecCapability{MimeType: "audio/opus"}, "video", "pion")
 	if err != nil {
 		panic(err)
