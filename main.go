@@ -234,6 +234,12 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 	// Add our new PeerConnection to global list
 	listLock.Lock()
 	peerConnections = append(peerConnections, peerConnectionState{peerConnection, c})
+	noConnections := len(peerConnections)
+	for _, conn := range peerConnections {
+		if msg, err := json.Marshal(noConnections); err == nil {
+			conn.websocket.WriteJSON(&websocketMessage{Event: "connections", Data: string(msg)})
+		}
+	}
 	fmt.Printf("Connections: %d\n", len(peerConnections))
 	listLock.Unlock()
 
