@@ -206,12 +206,12 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Accept one audio and one video track Outgoing
 	transceiverVideo, err := peerConnection.AddTransceiverFromTrack(videoTrack,
-		webrtc.RtpTransceiverInit{
+		webrtc.RTPTransceiverInit{
 			Direction: webrtc.RTPTransceiverDirectionSendonly,
 		},
 	)
 	transceiverAudio, err := peerConnection.AddTransceiverFromTrack(audioTrack,
-		webrtc.RtpTransceiverInit{
+		webrtc.RTPTransceiverInit{
 			Direction: webrtc.RTPTransceiverDirectionSendonly,
 		},
 	)
