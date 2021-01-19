@@ -26,7 +26,7 @@ var (
 	wsPort   = flag.Int("ws-port", 8080, "Port for websocket")
 	rtpPort  = flag.Int("rtp-port", 65535, "Port for RTP")
 	ports    = flag.String("ports", "20000-20500", "Port range for webrtc")
-	sslCert  = flag.String("ssl-cert", "", "Ssl cert for websocket(optional)")
+	sslCert  = flag.String("ssl-cert", "", "Ssl cert for websocket (optional)")
 	sslKey   = flag.String("ssl-key", "", "Ssl key for websocket (optional)")
 	upgrader = websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool { return true },
