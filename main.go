@@ -26,6 +26,8 @@ var (
 	wsPort   = flag.Int("ws-port", 8080, "Port for websocket")
 	rtpPort  = flag.Int("rtp-port", 65535, "Port for RTP")
 	ports    = flag.String("ports", "20000-20500", "Port range for webrtc")
+	sslCert  = flag.String("ssl-cert", "", "Ssl cert for websocket(optional)")
+	sslKey   = flag.String("ssl-key", "", "Ssl key for websocket (optional)")
 	upgrader = websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool { return true },
 	}
@@ -73,7 +75,12 @@ func main() {
 	go func() {
 		http.HandleFunc("/websocket", websocketHandler)
 
-		log.Fatal(http.ListenAndServe(*addr+":"+strconv.Itoa(*wsPort), nil))
+		wsAddr := *addr+":"+strconv.Itoa(*wsPort)
+		if *sslCert != "" && *sslKey != "" {
+			log.Fatal(http.ListenAndServeTLS(wsAddr, *sslCert, *sslKey, nil))
+		} else {
+			log.Fatal(http.ListenAndServe(wsAddr, nil))
+		}
 	}()
 
 	inboundRTPPacket := make([]byte, 4096) // UDP MTU
