@@ -102,6 +102,7 @@ func main() {
 		seq := sequenceUnwrapper.Unwrap(uint64(packet.SequenceNumber))
 
 		if !jitterBuffer.Add(seq, packet) {
+			fmt.Print("Cont\n")
 			continue
 		}
 
