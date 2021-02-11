@@ -99,25 +99,28 @@ func main() {
 			//fmt.Printf("Error unmarshaling RTP packet %s\n", err)
 
 		}
-		seq := sequenceUnwrapper.Unwrap(uint64(packet.SequenceNumber))
+		if packet.Header.PayloadType == 96 || packet.Header.PayloadType == 97 {
+			seq := sequenceUnwrapper.Unwrap(uint64(packet.SequenceNumber))
 
-		if !jitterBuffer.Add(seq, packet) {
-			fmt.Print("Cont\n")
-			continue
-		}
+			if !jitterBuffer.Add(seq, packet) {
+				fmt.Print("Cont\n")
+				continue
+			}
 
-		// jitterBuffer.SetNextPacketsStart() can be called in case of a keyframe, so the buffer content is dropped up until the keyframe
+			// jitterBuffer.SetNextPacketsStart() can be called in case of a keyframe, so the buffer content is dropped up until the keyframe
 
-		for _, rtp := range jitterBuffer.NextPackets() {
-			if rtp.Header.PayloadType == 96 {
-				if writeErr := videoTrack.WriteRTP(rtp); writeErr != nil {
-					panic(writeErr)
-				}
-			} else if rtp.Header.PayloadType == 97 {
-				if writeErr := audioTrack.WriteRTP(rtp); writeErr != nil {
-					panic(writeErr)
+			for _, rtp := range jitterBuffer.NextPackets() {
+				if rtp.Header.PayloadType == 96 {
+					if writeErr := videoTrack.WriteRTP(rtp); writeErr != nil {
+						panic(writeErr)
+					}
+				} else if rtp.Header.PayloadType == 97 {
+					if writeErr := audioTrack.WriteRTP(rtp); writeErr != nil {
+						panic(writeErr)
+					}
 				}
 			}
+
 		}
 
 	}
