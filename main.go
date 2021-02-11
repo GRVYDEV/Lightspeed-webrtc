@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/GRVYDEV/lightspeed-webrtc/internal/util"
 	"github.com/GRVYDEV/lightspeed-webrtc/ws"
 	"github.com/gorilla/websocket"
 
@@ -78,6 +79,9 @@ func main() {
 
 	inboundRTPPacket := make([]byte, 4096) // UDP MTU
 
+	sequenceUnwrapper := util.NewSequenceUnwrapper(16)
+	jitterBuffer := util.NewJitterBuffer(512)
+
 	// Read RTP packets forever and send them to the WebRTC Client
 	for {
 
@@ -95,14 +99,23 @@ func main() {
 			//fmt.Printf("Error unmarshaling RTP packet %s\n", err)
 
 		}
+		seq := sequenceUnwrapper.Unwrap(uint64(packet.SequenceNumber))
 
-		if packet.Header.PayloadType == 96 {
-			if _, writeErr := videoTrack.Write(inboundRTPPacket[:n]); writeErr != nil {
-				panic(writeErr)
-			}
-		} else if packet.Header.PayloadType == 97 {
-			if _, writeErr := audioTrack.Write(inboundRTPPacket[:n]); writeErr != nil {
-				panic(writeErr)
+		if !jitterBuffer.Add(seq, packet) {
+			continue
+		}
+
+		// jitterBuffer.SetNextPacketsStart() can be called in case of a keyframe, so the buffer content is dropped up until the keyframe
+
+		for _, rtp := range jitterBuffer.NextPackets() {
+			if rtp.Header.PayloadType == 96 {
+				if writeErr := videoTrack.WriteRTP(rtp); writeErr != nil {
+					panic(writeErr)
+				}
+			} else if rtp.Header.PayloadType == 97 {
+				if writeErr := audioTrack.WriteRTP(rtp); writeErr != nil {
+					panic(writeErr)
+				}
 			}
 		}
 
