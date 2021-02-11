@@ -99,7 +99,7 @@ func main() {
 			//fmt.Printf("Error unmarshaling RTP packet %s\n", err)
 
 		}
-		if packet.Header.PayloadType == 96 || packet.Header.PayloadType == 97 {
+		if packet.Header.PayloadType == 96 {
 			seq := sequenceUnwrapper.Unwrap(uint64(packet.SequenceNumber))
 
 			if !jitterBuffer.Add(seq, packet) {
@@ -110,17 +110,17 @@ func main() {
 			// jitterBuffer.SetNextPacketsStart() can be called in case of a keyframe, so the buffer content is dropped up until the keyframe
 
 			for _, rtp := range jitterBuffer.NextPackets() {
-				if rtp.Header.PayloadType == 96 {
-					if writeErr := videoTrack.WriteRTP(rtp); writeErr != nil {
-						panic(writeErr)
-					}
-				} else if rtp.Header.PayloadType == 97 {
-					if writeErr := audioTrack.WriteRTP(rtp); writeErr != nil {
-						panic(writeErr)
-					}
+
+				if writeErr := videoTrack.WriteRTP(rtp); writeErr != nil {
+					panic(writeErr)
 				}
+
 			}
 
+		} else if packet.Header.PayloadType == 97 {
+			if writeErr := audioTrack.WriteRTP(packet); writeErr != nil {
+				panic(writeErr)
+			}
 		}
 
 	}
