@@ -3,7 +3,6 @@ package ws
 import (
 	"encoding/json"
 	"log"
-	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -22,9 +21,6 @@ type Client struct {
 
 	// webRTC peer connection
 	PeerConnection *webrtc.PeerConnection
-
-	// Wait group
-	sync.WaitGroup
 }
 
 func NewClient(hub *Hub, conn *websocket.Conn, webrtcConn *webrtc.PeerConnection) *Client {

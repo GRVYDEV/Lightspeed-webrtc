@@ -205,10 +205,8 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 
 	go c.WriteLoop()
 
-	c.Add(1)
 	// Add to the hub
 	hub.Register <- c
-	c.Wait() // wait until registered.
 
 	// Trickle ICE. Emit server candidate to client
 	peerConnection.OnICECandidate(func(i *webrtc.ICECandidate) {
@@ -276,8 +274,6 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		log.Printf("could not marshal ws message: %s", err)
 	}
-
-	go hub.SendInfo(hub.GetInfo()) // non-blocking broadcast, required as the read loop is not started yet.
 
 	c.ReadLoop()
 }
