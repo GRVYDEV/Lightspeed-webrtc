@@ -79,7 +79,7 @@ func (h *Hub) SendInfo(info Info) {
 	}
 	if msg, err := json.Marshal(WebsocketMessage{
 		Event: MessageTypeInfo,
-		Data:  string(i),
+		Data:  i,
 	}); err == nil {
 		h.Broadcast <- msg
 	} else {
