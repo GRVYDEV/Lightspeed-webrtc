@@ -205,8 +205,10 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 
 	go c.WriteLoop()
 
+	c.Add(1)
 	// Add to the hub
 	hub.Register <- c
+	c.Wait() // wait until registered.
 
 	// Trickle ICE. Emit server candidate to client
 	peerConnection.OnICECandidate(func(i *webrtc.ICECandidate) {
@@ -224,7 +226,11 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 			Event: ws.MessageTypeCandidate,
 			Data:  string(candidateString),
 		}); err == nil {
-			c.Send <- msg
+			hub.RLock()
+			if _, ok := hub.Clients[c]; ok {
+				c.Send <- msg
+			}
+			hub.RUnlock()
 		} else {
 			log.Println(err)
 		}
@@ -262,7 +268,11 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 		Event: ws.MessageTypeOffer,
 		Data:  string(offerString),
 	}); err == nil {
-		c.Send <- msg
+		hub.RLock()
+		if _, ok := hub.Clients[c]; ok {
+			c.Send <- msg
+		}
+		hub.RUnlock()
 	} else {
 		log.Printf("could not marshal ws message: %s", err)
 	}

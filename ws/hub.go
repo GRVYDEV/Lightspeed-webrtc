@@ -3,6 +3,7 @@ package ws
 import (
 	"encoding/json"
 	"log"
+	"sync"
 	"time"
 )
 
@@ -18,10 +19,10 @@ type Info struct {
 }
 
 type Hub struct {
-	// Registered clients.
-	clients map[*Client]struct{}
+	// Registered Clients.
+	Clients map[*Client]struct{}
 
-	// Broadcast messages to all clients.
+	// Broadcast messages to all Clients.
 	Broadcast chan []byte
 
 	// Register a new client to the hub.
@@ -29,20 +30,25 @@ type Hub struct {
 
 	// Unregister a client from the hub.
 	Unregister chan *Client
+
+	// lock to prevent write to closed channel
+	sync.RWMutex
 }
 
 func NewHub() *Hub {
 	return &Hub{
-		clients:    make(map[*Client]struct{}),
+		Clients:    make(map[*Client]struct{}),
 		Broadcast:  make(chan []byte),
 		Register:   make(chan *Client),
 		Unregister: make(chan *Client),
 	}
 }
 
-// NoClients returns the number of clients registered
+// NoClients returns the number of Clients registered
 func (h *Hub) NoClients() int {
-	return len(h.clients)
+	h.RLock()
+	defer h.RUnlock()
+	return len(h.Clients)
 }
 
 // Run is the main hub event loop handling register, unregister and broadcast events.
@@ -50,17 +56,24 @@ func (h *Hub) Run() {
 	for {
 		select {
 		case client := <-h.Register:
-			h.clients[client] = struct{}{}
+			h.Lock()
+			h.Clients[client] = struct{}{}
+			h.Unlock()
+			client.Done()
 		case client := <-h.Unregister:
-			if _, ok := h.clients[client]; ok {
-				delete(h.clients, client)
+			h.Lock()
+			if _, ok := h.Clients[client]; ok {
+				delete(h.Clients, client)
 				close(client.Send)
-				go h.SendInfo(h.GetInfo()) // this way the number of clients does not change between calling the goroutine and executing it
+				go h.SendInfo(h.GetInfo()) // this way the number of Clients does not change between calling the goroutine and executing it
 			}
+			h.Unlock()
 		case message := <-h.Broadcast:
-			for client := range h.clients {
+			h.RLock()
+			for client := range h.Clients {
 				client.Send <- message
 			}
+			h.RUnlock()
 		}
 	}
 }
@@ -71,7 +84,7 @@ func (h *Hub) GetInfo() Info {
 	}
 }
 
-// SendInfo broadcasts hub statistics to all clients.
+// SendInfo broadcasts hub statistics to all Clients.
 func (h *Hub) SendInfo(info Info) {
 	i, err := json.Marshal(info)
 	if err != nil {
