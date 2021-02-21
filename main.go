@@ -224,7 +224,11 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 			Event: ws.MessageTypeCandidate,
 			Data:  string(candidateString),
 		}); err == nil {
-			c.Send <- msg
+			hub.RLock()
+			if _, ok := hub.Clients[c]; ok {
+				c.Send <- msg
+			}
+			hub.RUnlock()
 		} else {
 			log.Println(err)
 		}
@@ -262,12 +266,14 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 		Event: ws.MessageTypeOffer,
 		Data:  string(offerString),
 	}); err == nil {
-		c.Send <- msg
+		hub.RLock()
+		if _, ok := hub.Clients[c]; ok {
+			c.Send <- msg
+		}
+		hub.RUnlock()
 	} else {
 		log.Printf("could not marshal ws message: %s", err)
 	}
-
-	go hub.SendInfo(hub.GetInfo()) // non-blocking broadcast, required as the read loop is not started yet.
 
 	c.ReadLoop()
 }

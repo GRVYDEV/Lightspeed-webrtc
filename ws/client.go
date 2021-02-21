@@ -88,10 +88,6 @@ func (c *Client) ReadLoop() {
 				return
 			}
 		}
-
-		// we do not send anything to the other clients!
-		//message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
-		//c.hub.Broadcast <- message
 	}
 }
 
@@ -120,14 +116,11 @@ func (c *Client) WriteLoop() {
 			if err != nil {
 				return
 			}
-			_, _ = w.Write(message)
-
-			// Add queued messages to the current websocket message.
-			n := len(c.Send)
-			for i := 0; i < n; i++ {
-				_, _ = w.Write([]byte{'\n'})
-				message = <-c.Send
-				_, _ = w.Write(message)
+			_, err = w.Write(message)
+			if err != nil {
+				log.Printf("could not send message: %s",err)
+				w.Close()
+				return
 			}
 
 			if err := w.Close(); err != nil {
