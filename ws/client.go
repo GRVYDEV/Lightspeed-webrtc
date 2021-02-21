@@ -66,7 +66,7 @@ func (c *Client) ReadLoop() {
 		switch message.Event {
 		case MessageTypeCandidate:
 			candidate := webrtc.ICECandidateInit{}
-			if err := json.Unmarshal([]byte(message.Data), &candidate); err != nil {
+			if err := json.Unmarshal(message.Data, &candidate); err != nil {
 				log.Printf("could not unmarshal candidate msg: %s", err)
 				return
 			}
@@ -78,7 +78,7 @@ func (c *Client) ReadLoop() {
 
 		case MessageTypeAnswer:
 			answer := webrtc.SessionDescription{}
-			if err := json.Unmarshal([]byte(message.Data), &answer); err != nil {
+			if err := json.Unmarshal(message.Data, &answer); err != nil {
 				log.Printf("could not unmarshal answer msg: %s", err)
 				return
 			}

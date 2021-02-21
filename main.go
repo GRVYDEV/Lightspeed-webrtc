@@ -222,7 +222,7 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 
 		if msg, err := json.Marshal(ws.WebsocketMessage{
 			Event: ws.MessageTypeCandidate,
-			Data:  string(candidateString),
+			Data:  candidateString,
 		}); err == nil {
 			hub.RLock()
 			if _, ok := hub.Clients[c]; ok {
@@ -264,7 +264,7 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 
 	if msg, err := json.Marshal(ws.WebsocketMessage{
 		Event: ws.MessageTypeOffer,
-		Data:  string(offerString),
+		Data:  offerString,
 	}); err == nil {
 		hub.RLock()
 		if _, ok := hub.Clients[c]; ok {
