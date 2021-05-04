@@ -125,6 +125,8 @@ go build
 | `--ports`  | A valid UDP port range | `20000-20500` | This sets the UDP ports that WebRTC will use to connect with the client |
 | `--ws-port` | A valid port number | `8080` | This is the port on which the websocket will be hosted. If you change this value make sure that is reflected in the URL used by the react client |
 | `--rtp-port` | A valid port number | `65535` | This is the port on which the WebRTC service will listen for RTP packets. Ensure this is the same port that Lightspeed Ingest is negotiating with the client |
+| `--ssl-cert` | A valid ssl cert path | | This is the ssl cert that the websocket server will use. If omitted, the websocket will not be served over ssl. |
+| `--ssl-key` | A valid port number | | This is the ssl private key that the websocket server will use. If omitted, the websocket will not be served over ssl. |
 
 
 
