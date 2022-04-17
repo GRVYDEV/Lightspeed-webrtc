@@ -3,7 +3,7 @@
     <img src="images/lightspeedlogo.svg" alt="Logo" width="150" height="150">
 </a>
 </p>
-  <h1 align="center">Project Lightspeed WebRTC</h1>
+  <h1 align="center">Project Lightspeed WebRTC [Deprecated]</h1>
 <div align="center">
   <a href="https://github.com/GRVYDEV/Lightspeed-webrtc/stargazers"><img src="https://img.shields.io/github/stars/GRVYDEV/Lightspeed-webrtc" alt="Stars Badge"/></a>
 <a href="https://github.com/GRVYDEV/Lightspeed-webrtc/network/members"><img src="https://img.shields.io/github/forks/GRVYDEV/Lightspeed-webrtc" alt="Forks Badge"/></a>
@@ -15,6 +15,7 @@
 <br />
 <p align="center">
   <p align="center">
+	NOTE: This repo has been deprecated in favor of a monorepo configuration. Please <a href="https://github.com/GRVYDEV/Project-Lightspeed">see</a><br>
     A RTP -> WebRTC server based on Pion written in Go. This server accepts RTP packets on port 65535 and broadcasts them via WebRTC
     <!-- <br /> -->
     <!-- <a href="https://github.com/GRVYDEV/Lightspeed-webrtc"><strong>Explore the docs »</strong></a> -->
